@@ -3,7 +3,6 @@ import Data.Char (ord)
 import GHC.List (head, tail)
 
 
-
 scan_nums :: String -> [Int]
 scan_nums [] = []
 scan_nums (x:xs) = 
