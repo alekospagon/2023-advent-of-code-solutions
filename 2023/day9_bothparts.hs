@@ -10,4 +10,7 @@ main = do
         raw <- getContents
         let integers = map (map (read :: String->Int) . words) $ lines raw :: [[Int]]
         let triangles = map make_triangles integers -- [  [a,b,c] , [d,e] , [z] ]
-        print $ sum $ map (sum . (map last)) triangles -- add lasts of every triangle-list
+        print "PART 1"
+        print $ sum $ map (sum . (map last)) triangles
+        print "PART 2"
+        print $ sum $ map (foldl (flip (-)) 0 . (map head)) triangles -- hack baby
