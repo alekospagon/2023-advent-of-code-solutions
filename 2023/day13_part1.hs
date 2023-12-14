@@ -1,40 +1,22 @@
 import Data.List
 import Data.List.Split
 
+(part1, part2) = (0,1)
 
--- checks if it is mirrored
-check :: [([Char],[Char])] -> Bool
-check [] = True
-check ((x,y):xs) = if x == y then check xs else False
+-- accumulate errors from every pair of strings and checks if its a valid mirroring
+check lst = (sum $ map (\x -> diff (fst x) (snd x)) lst) == part2
 
+-- accumulate errors from two different strings
+diff lst1 lst2 = sum $ map (\(x,y) -> if x==y then 0 else 1) $ zip lst1 lst2
 
--- takes all splits of list and returns row_idx's when there is a mirror
-flips :: [(Int,[[Char]],[[Char]])] -> Int
-flips [] = 0
-flips ((idx,lst1,lst2):rest) = this + (flips rest)
-	where
-	this = if check (zip (reverse lst1) lst2) then idx else 0
+-- takes a mirroring and returns index if it is valid
+flips lst = sum $ map (\(i,l1,l2) -> if check (zip (reverse l1) l2) then i else 0) lst
 
-
--- returns row indexes of mirrors
-row :: [[Char]] -> Int
-row grid = flips splits
-	where
-	splits = [(i, take i grid, drop i grid) | i <- [1..((length grid)-1)]]
-
-	
--- transpose is built-in. does A_ij->A_ji
-column grid = row (transpose grid)	
-
-
-solve grid = r * 100 + c
-	where
-	r = row grid
-	c = column grid
-
+-- returns row indexes of all valid mirrorings
+rows grid = flips [(i, take i grid, drop i grid) | i <- [1..((length grid)-1)]]
+columns grid = rows (transpose grid) -- transpose A_ij->A_ji
 
 main = do
-	c <- getContents
-	let cases = splitOn [""] $ lines c
-	let solutions = map solve cases
-	print $ sum solutions
+        c <- getContents
+        let grids = splitOn [""] $ lines c
+        print $ sum $ map (\x -> (rows x) * 100 + (columns x)) grids
