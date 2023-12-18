@@ -3,7 +3,7 @@ import qualified Data.Map as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
-max_int = 10000000
+max_int = 100000000
 
 neighbours grid (y,x) this = up ++ down ++ left ++ right
         where
@@ -22,19 +22,14 @@ neighbours grid (y,x) this = up ++ down ++ left ++ right
 aux grid dist so_far [] = dist
 aux grid dist so_far (n:ns) = aux grid (Map.adjust (min (so_far+1)) n dist) so_far ns
 
-
 -- Dijkstra with distances, a Set of seen nodes and a queue
 search grid dist seen [] = dist -- done 
-search grid dist seen queue = search grid new_dist new_seen new_queue
+search grid dist seen (node:popped) = search grid new_dist new_seen new_queue
         where
-        node   = head queue
-        so_far = Map.findWithDefault (-1) node dist -- path up to this point
-        neighs = neighbours grid node (Map.findWithDefault '*' node grid)
-        new_dist  = aux grid dist so_far neighs -- update neighbour dists
-        new_queue = (tail queue) ++ unseen -- pop and attach new
-        new_seen  = Set.insert node seen -- now im done with node
-        unseen    = filter (flip Set.notMember seen) neighs -- unseen   
-
+        neighs = neighbours grid node (grid Map.! node)
+        new_dist  = aux grid dist (dist Map.! node) neighs 
+        new_seen  = Set.insert node seen
+        new_queue = popped ++ filter (flip Set.notMember seen) neighs 
 
 
 main = do
@@ -42,6 +37,5 @@ main = do
         let grid = Map.fromList [((y,x), c) | (y,l) <- zip [0..] (lines c), (x,c) <- zip [0..] l]
         let dist = Map.fromList [((y,x), if c == 'S' then 0 else max_int) |
                 (y,l) <- zip [0..] (lines c), (x,c) <- zip [0..] l]
-        let entry_point = head $ filter (\x -> Map.findWithDefault '*' x grid == 'S') $ Map.keys grid
-        let seen = Set.singleton entry_point -- entry point seen
-        print $ maximum $ filter (< max_int) $ Map.elems $ search grid dist seen [entry_point]
+        let entry = head $ filter (\x -> Map.findWithDefault '*' x grid == 'S') $ Map.keys grid
+        print $ maximum $ filter (< max_int) $ Map.elems $ search grid dist (Set.singleton entry) [entry]
